@@ -1,0 +1,92 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.AI;
+
+public class Zombie_AI : MonoBehaviour
+{
+    [Tooltip("Health for the Zombie")]
+    [Header("Health Stats")]
+    public float MaxHealth = 10;
+    public float Health;
+
+    [Header("Navmesh")]
+    public NavMeshAgent agent;
+
+    [Header("Look Radius")]
+    [Range(1f, 100f)]
+    public float lookRadius;
+    public GameObject Player;
+
+    public GameObject Zombie;
+
+    //Transform
+    Transform target;
+
+
+    void SetKinematic(bool newValue)
+    {
+        Rigidbody[] bodies = GetComponentsInChildren<Rigidbody>();
+        foreach (Rigidbody rb in bodies)
+        {
+            rb.isKinematic = newValue;
+            Debug.Log("Scanning Joints");
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, lookRadius);
+    }
+
+    void Start()
+    {
+        SetKinematic(true);
+        Health = MaxHealth;
+    }
+
+    private void Update()
+    {
+
+        float distance = Vector3.Distance(Zombie.transform.position, Player.transform.position);
+
+        if (distance < lookRadius)
+        {
+            Debug.Log(gameObject.name + " is Following the Player");
+            agent.isStopped = false;
+            agent.SetDestination(Player.transform.position);
+            GetComponent<Animator>().SetBool("IsIdle", false);
+            GetComponent<Animator>().SetBool("IsRunning", true);
+        }
+        else
+        {
+            agent.isStopped = true;
+            GetComponent<Animator>().SetBool("IsIdle", true);
+            GetComponent<Animator>().SetBool("IsRunning", false);
+        }
+
+    }
+
+    public void TakeDamage (float amount)
+    {
+        Health -= amount;
+        Debug.Log("Zombie was hit");
+
+        if (Health <= 0f)
+        {
+            Die();
+        }
+
+    }
+
+    void Die()
+    {
+        agent.enabled = false;
+        GetComponent<BoxCollider>().enabled = false;
+        GetComponent<Animator>().enabled = false;
+        SetKinematic(false);
+        Debug.Log("Zombie has died");
+        GetComponent<Zombie_AI>().enabled = false;
+    }
+}
