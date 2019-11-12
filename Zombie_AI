@@ -18,6 +18,12 @@ public class Zombie_AI : MonoBehaviour
     public float lookRadius;
     public GameObject Player;
 
+    [Header("Wandering Settings")]
+    [Tooltip("Used for Zombie Patroling")]
+    public bool Patrol;
+    public bool isWandering;
+    public GameObject[] Waypoints;
+
     public GameObject Zombie;
 
     //Transform
@@ -44,6 +50,7 @@ public class Zombie_AI : MonoBehaviour
     {
         SetKinematic(true);
         Health = MaxHealth;
+
     }
 
     private void Update()
@@ -59,7 +66,8 @@ public class Zombie_AI : MonoBehaviour
             GetComponent<Animator>().SetBool("IsIdle", false);
             GetComponent<Animator>().SetBool("IsRunning", true);
         }
-        else
+        
+        if (distance > lookRadius && Patrol == false)
         {
             agent.isStopped = true;
             GetComponent<Animator>().SetBool("IsIdle", true);
@@ -87,6 +95,13 @@ public class Zombie_AI : MonoBehaviour
         GetComponent<Animator>().enabled = false;
         SetKinematic(false);
         Debug.Log("Zombie has died");
-        GetComponent<Zombie_AI>().enabled = false;
+        GetComponent<Zombie_AI>().enabled = false; // At this point, zombie is braindead and stopped all functions
     }
+
+    public void InflictDamage ()
+    {
+        agent.isStopped = true;
+        Player.GetComponent<Player_Manager>().Health -= 25f;
+    }
+
 }
