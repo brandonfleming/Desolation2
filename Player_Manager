@@ -1,0 +1,193 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityStandardAssets.Characters.FirstPerson;
+using UnityEngine.UI;
+
+public class Player_Manager : MonoBehaviour
+{
+    [Header("Inventory")]
+    public Inventory inventory;
+    public GameObject inventoryUI;
+    public bool InventoryOpen;
+    [Header("Misc")]
+    public GameObject Guns;
+    public GameObject Crosshair;
+    [Header("Health")]
+    public float Health;
+    public Text HealthUI;
+    [Header("Pause")]
+    public GameObject PauseUI;
+    [Header("Item Console")]
+    public GameObject ConsoleUI;
+    [Header("Sounds")]
+    public AudioClip[] clips;
+    public AudioSource audioSource;
+    [Header("QuestManager")]
+    public GameObject QuestUI;
+
+    public void Start()
+    {
+        inventoryUI.SetActive(false);
+        PauseUI.SetActive(false);
+    }
+
+    public void Update()
+    {
+
+        HealthUI.text = Health.ToString();
+
+        if (Health <= 0f)
+        {
+            StartCoroutine("Die");
+        }
+
+        if (Input.GetKeyDown(KeyCode.Tab) && InventoryOpen == false)
+        {
+            OpenInventory();
+        }
+
+        if (Input.GetKeyDown(KeyCode.E) && InventoryOpen == true)
+        {
+            CloseInventory();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Pause();
+        }
+
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+            OpenConsole();
+        }
+
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Zombie"))
+        {
+            other.gameObject.GetComponent<Zombie_AI>().InflictDamage();
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Zombie"))
+        {
+            other.gameObject.GetComponent<Zombie_AI>().agent.isStopped = false;
+        }
+    }
+
+    public void OpenInventory ()
+    {
+        inventoryUI.SetActive(true);
+        Crosshair.SetActive(false);
+        InventoryOpen = true;
+        Time.timeScale = 0f;
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+        GetComponent<FirstPersonController>().enabled = false;
+        Debug.Log("Player has opened the Inventory");
+        Guns.GetComponentInChildren<Gun_Carbine>().CanShoot = false;
+        //Guns.SetActive(false);
+    }
+
+    public void Pause ()
+    {
+        PauseUI.SetActive(true);
+        Crosshair.SetActive(false);
+        InventoryOpen = true;
+        Time.timeScale = 0f;
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+        GetComponent<FirstPersonController>().enabled = false;
+        Debug.Log("Player has paused the game");
+        Guns.GetComponentInChildren<Gun_Carbine>().enabled = false;
+    }
+
+    public void Resume ()
+    {
+        PauseUI.SetActive(false);
+        Crosshair.SetActive(true);
+        InventoryOpen = false;
+        Time.timeScale = 1f;
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        GetComponent<FirstPersonController>().enabled = true;
+        Debug.Log("Player has resumed the game");
+        Guns.GetComponentInChildren<Gun_Carbine>().enabled = true;
+        // Guns.SetActive(true);
+    }
+
+    public IEnumerator CloseInventoryUI ()
+    {
+        inventoryUI.SetActive(false);
+        Crosshair.SetActive(true);
+        InventoryOpen = false;
+        Time.timeScale = 1f;
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        GetComponent<FirstPersonController>().enabled = true;
+        Debug.Log("Player has closed the Inventory");
+        yield return new WaitForSeconds(1f);
+        Guns.GetComponentInChildren<Gun_Carbine>().CanShoot = true;
+
+    }
+
+    public void CloseInventory ()
+    {
+        StartCoroutine("CloseInventoryUI");
+    }
+
+    public void OpenConsole ()
+    {
+        ConsoleUI.SetActive(true);
+        Crosshair.SetActive(false);
+        Time.timeScale = 0f;
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+        GetComponent<FirstPersonController>().enabled = false;
+        Debug.Log("Player has opened the Item Console");
+        Guns.GetComponentInChildren<Gun_Carbine>().enabled = false;
+        // Guns.SetActive(true);
+    }
+
+    public void CloseConsole()
+    {
+        ConsoleUI.SetActive(false);
+        Crosshair.SetActive(true);
+        InventoryOpen = false;
+        Time.timeScale = 1f;
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        GetComponent<FirstPersonController>().enabled = true;
+        Debug.Log("Player has closed the Item Console");
+        Guns.GetComponentInChildren<Gun_Carbine>().enabled = true;
+        // Guns.SetActive(true);
+    }
+
+    public void ShowQuestUI ()
+    {
+        QuestUI.SetActive(true);
+    }
+
+    public void CloseQuestUI ()
+    {
+        QuestUI.SetActive(false);
+    }
+
+    public IEnumerator Die ()
+    {
+        Debug.LogWarning("Player has died!");
+        GetComponentInChildren<Animation>().wrapMode = WrapMode.ClampForever;
+        audioSource.clip = clips[0];
+        audioSource.Play();
+        GetComponentInChildren<Animation>().Play();
+        GetComponent<FirstPersonController>().enabled = false;
+        yield return new WaitForSeconds(GetComponentInChildren<Animation>().clip.length);
+        Time.timeScale = 0f;
+    }
+
+}
