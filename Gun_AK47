@@ -4,20 +4,35 @@ using UnityEngine;
 using UnityStandardAssets.Characters.FirstPerson;
 using UnityEngine.UI;
 
-public class Gun_AK47 : MonoBehaviour
+public class Gun_Carbine : MonoBehaviour
 {
+
+    // MASTER GUN CODE FILE
+
     [Header("Name:")]
-    public string Name = "AK47";
+    public string Name;
 
     [Header("Description:")]
     public string Description;
 
+    [Header("Sprite")]
+    public Sprite sprite;
+
+    [Header("Gun Type")]
+    public bool Automatic;
+    public bool SingleFire;
+
+
     [Header("Basics")]
-    public float Damage = 10f;
+    public float Damage = 20f;
     public float range = 50f;
     public float clip = 30f;
     public float reserve = 120f;
-    public float fireRate = 15f;
+    public float fireRate = 5f;
+
+    [Header("Aiming")]
+    public Vector3 hipPos;
+    public Vector3 zoomPos;
 
     [Header("Player")]
     public FirstPersonController PlayerController;
@@ -30,7 +45,7 @@ public class Gun_AK47 : MonoBehaviour
     [Header("SFX")]
     public AudioSource audio;
     public AudioClip[] clips;
-    public GameObject blood;
+    public GameObject[] blood;
     public ParticleSystem flash;
     public GameObject Light;
 
@@ -49,9 +64,11 @@ public class Gun_AK47 : MonoBehaviour
 
     private Vector3 initialSwayPosition;
     private float nextTimeToFire = 1f;
-    bool CanShoot;
+    public bool CanShoot;
 
     private bool CanReload;
+    private float maxclip;
+    private float maxreserve;
 
     [HideInInspector]
     public bool isWalking;
@@ -59,10 +76,32 @@ public class Gun_AK47 : MonoBehaviour
     private void Start()
     {
         CanShoot = true;
+        maxclip = clip;
+        maxreserve = reserve;
+    }
+
+    public void OnEnable()
+    {
+        StartCoroutine("Activate");
+    }
+
+    public IEnumerator Activate ()
+    {
+        CanShoot = false;
+        yield return new WaitForSeconds(5f);
+        CanShoot = true;
     }
 
     private void Update()
     {
+
+        if (Input.GetButton("Fire2"))
+        {
+            transform.localPosition = Vector3.Lerp(transform.localPosition, zoomPos, Time.deltaTime * 70);
+        } else
+        {
+            transform.localPosition = Vector3.Lerp(transform.localPosition, hipPos, Time.deltaTime);
+        }
 
         if (Input.GetKey(KeyCode.W) && isWalking == false ||
              Input.GetKey(KeyCode.A) && isWalking == false ||
@@ -79,40 +118,52 @@ public class Gun_AK47 : MonoBehaviour
         if (PlayerController.GetComponent<FirstPersonController>().m_IsWalking == false)
         {
             anim_controller.SetBool("Run", true);
-        } else
+        }
+        else
         {
             anim_controller.SetBool("Run", false);
         }
 
-        if (Input.GetButton("Fire1") && Time.time >= nextTimeToFire && CanShoot == true)
+        if (clip <= 0f)
+        {
+            CanShoot = false;
+        }
+
+        if (Input.GetButton("Fire1") && Time.time >= nextTimeToFire && CanShoot == true && Automatic == true)
         {
             nextTimeToFire = Time.time + 1f / fireRate;
             StartCoroutine("Shoot");
 
-            if (clip <= 0f)
-            {
-                CanShoot = false;
-            }
+        }
 
+        if (Input.GetButtonDown("Fire1") && CanShoot == true && SingleFire == true)
+        {
+            StartCoroutine("Shoot");
+        }
+
+        if (Automatic == true && SingleFire == true)
+        {
+            Debug.LogError("Gun can not be both types! Select 1 type!");
         }
 
         reserveui.text = reserve.ToString();
         clipui.text = clip.ToString();
 
-        if(Input.GetKeyDown(KeyCode.R) && CanReload == true) 
+        if (Input.GetKeyDown(KeyCode.R) && CanReload == true)
         {
             StartCoroutine("Reload");
         }
 
-        if (clip == 30f)
+        if (clip == maxclip)
         {
             CanReload = false;
-        } else
+        }
+        else
         {
             CanReload = true;
         }
 
-        }
+    }
 
     private void LateUpdate()
     {
@@ -136,10 +187,10 @@ public class Gun_AK47 : MonoBehaviour
         }
     }
 
-    public IEnumerator Reload ()
+    public IEnumerator Reload()
     {
-        reserve -= 30f;
-        clip += 30f;
+        reserve -= maxclip;
+        clip += maxclip;
         audio.clip = clips[1];
         audio.Play();
         anim_controller.Play("Reload Out Of Ammo");
@@ -148,14 +199,14 @@ public class Gun_AK47 : MonoBehaviour
 
         if (clip != 0f && reserve != 0f)
         {
-            float difference = 30f - clip;
+            float difference = maxclip - clip;
             reserve = reserve - difference;
             clip = clip + difference;
         }
 
     }
 
-    public IEnumerator Shoot ()
+    public IEnumerator Shoot()
     {
         clip -= 1f;
         Debug.Log("Shot the thing");
@@ -174,17 +225,23 @@ public class Gun_AK47 : MonoBehaviour
 
             if (enemy != null)
             {
-                GameObject impactGo = Instantiate(blood, hit.point, PlayerController.transform.rotation);
+                Debug.Log("Player has shot a zombie");
+                GameObject impactGo = Instantiate(blood[0], hit.point, PlayerController.transform.rotation);
                 enemy.TakeDamage(Damage);
                 Destroy(impactGo, 1f);
             }
 
+
+            if (hit.transform.gameObject.tag == "Walls")
+            {
+                GameObject dust = Instantiate(blood[1], hit.point, Quaternion.identity);
+                Destroy(dust, 2f);
+            }
+
             if (hit.rigidbody != null)
             {
-                hit.rigidbody.AddForce(-hit.normal * 300f);
+                hit.rigidbody.AddForce(-hit.normal * 600f);
             }
         }
     }
 }
-
-
