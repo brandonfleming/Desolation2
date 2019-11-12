@@ -10,12 +10,25 @@ public class Inventory : MonoBehaviour
     [Tooltip("Bools for Slots.")]
     [Header("Inventory Slots")]
     public bool[] isFull;
+    [Header("Slots")]
+    public GameObject[] slots;
 
     public void Update()
     {
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             Items[0].SetActive(true);
+            Items[1].SetActive(false);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            Items[0].SetActive(false);
+            Items[1].SetActive(true);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            Items[0].SetActive(false);
+            Items[1].SetActive(false);
         }
     }
 
