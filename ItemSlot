@@ -1,0 +1,56 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ItemSlot : MonoBehaviour
+{
+
+    public GameObject Item;
+    public Inventory inventory;
+    public float SlotNum;
+    public Player_Manager manager;
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+    public void UseItemOne ()
+    {
+
+        inventory.Items[0].SetActive(true);
+        inventory.Items[1].SetActive(false);
+        inventory.Items[2].SetActive(false);
+        inventory.Items[3].SetActive(false);
+
+    }
+    public void UseItemTwo()
+    {
+
+        inventory.Items[0].SetActive(false);
+        inventory.Items[1].SetActive(true);
+        inventory.Items[2].SetActive(false);
+        inventory.Items[3].SetActive(false);
+
+    }
+    public void UseItemThree()
+    {
+
+        inventory.Items[0].SetActive(false);
+        inventory.Items[1].SetActive(false);
+        inventory.Items[2].SetActive(true);
+        inventory.Items[3].SetActive(false);
+
+    }
+    public void UseItemFour()
+    {
+
+        inventory.Items[0].SetActive(false);
+        inventory.Items[1].SetActive(false);
+        inventory.Items[2].SetActive(false);
+        inventory.Items[3].SetActive(true);
+
+    }
+
+}
