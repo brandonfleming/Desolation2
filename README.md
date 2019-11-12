@@ -1,6 +1,4 @@
-# Project-Greenbrier
-
-Desolation 2
+# Desolation 2
 
 OUT OCTOBER 19th 2020
 
@@ -11,7 +9,7 @@ Project Status: Active Production
 Start Date: October 22nd 2019
 __________________________________________________________________________________________
 
-Timeline
+# Timeline
 
 August 8th 2019: Desolation 2 pitched as "Project Greenbrier" to former Biohazard Studio
 August 13th 2019: 3D modelers are hired
@@ -21,6 +19,6 @@ October 22nd 2019: Programming starts on Gun_AK47 and Zombie_AI
 
 _________________________________________________________________________________________
 
-Updates: 
+# Updates: 
 
 Desolation 2 now version 0.3, download will be out December 12th.
